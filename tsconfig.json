@@ -1,44 +1,31 @@
 {
   "compilerOptions": {
-    "types": ["node"],
-
-    /* Emit */
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": false,
-    "outDir": "./dist",
-
-    /* Modules & Resolution */
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
-
-    /* Language & Target */
-    "target": "ES2019",
-    "lib": ["ES2019"],
-
+    /* Base Environment */
+    "target": "ES2024",
+    "lib": ["ES2024"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    
     /* Strictness */
     "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
-
-    /* JS Interop */
-    "allowJs": false,
-    "checkJs": false,
-
-    /* Interop / Packaging */
-    "isolatedModules": true,
-    "skipLibCheck": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,         // Recommended: Ensures 'override' keyword is used in classes
+    "noPropertyAccessFromIndexSignature": true, // Recommended: Prevents dot-notation for dynamic keys
+    
+    /* Emit & Performance */
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "skipLibCheck": true,               // Keeps build times fast
+    "esModuleInterop": true,            // Modern default for CJS/ESM compatibility
     "forceConsistentCasingInFileNames": true,
-    "moduleDetection": "force",
-
-    /* Paths */
-    "baseUrl": "./src"
+    
+    /* 2026 Optimization */
+    "isolatedDeclarations": true        // Speeds up builds in monorepos/large projects
   },
-  "include": ["src/**/*", "demo.js"],
-  "exclude": ["dist", "node_modules", "**/*.test.ts", "**/*.spec.ts"]
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "tests"]
 }

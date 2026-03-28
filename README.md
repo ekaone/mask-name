@@ -1,19 +1,26 @@
 # @ekaone/mask-name
 
-A lightweight, zero-dependency utility to mask personal names for privacy protection. Supports **Latin**, **Chinese**, and **Japanese** scripts with fully customizable options.
+> A lightweight, zero-dependency utility to mask personal names for privacy protection. Supports **Latin**, **Chinese**, and **Japanese** scripts with fully customizable options.
 
 Part of the [mask-suite](#related-packages) family alongside `mask-email`, `mask-phone`, `mask-card` and `mask-token`.
+
+[![npm version](https://img.shields.io/npm/v/@ekaone/mask-name.svg)](https://www.npmjs.com/package/@ekaone/mask-name)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
+
 
 ---
 
 ## Installation
 
 ```bash
+pnpm add @ekaone/mask-name
+# or
 npm install @ekaone/mask-name
 # or
 yarn add @ekaone/mask-name
 # or
-pnpm add @ekaone/mask-name
+bun add @ekaone/mask-name
 ```
 
 ---
