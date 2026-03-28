@@ -1,6 +1,6 @@
 {
   "name": "@ekaone/mask-name",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A lightweight, zero-dependency TypeScript library for masking name",
   "keywords": [
     "name",
