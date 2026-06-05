@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { maskName } from "../src/maskName";
+import { maskName } from "../src/maskName.js";
 
 describe("maskName() — error handling", () => {
   describe("Input validation errors", () => {

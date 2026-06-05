@@ -1,4 +1,4 @@
-import { ScriptType } from "../types";
+import { ScriptType } from "../types.js";
 
 /**
  * Unicode ranges used to identify CJK characters.

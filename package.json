@@ -1,6 +1,6 @@
 {
   "name": "@ekaone/mask-name",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "A lightweight, zero-dependency TypeScript library for masking name",
   "keywords": [
     "name",
@@ -19,14 +19,15 @@
     "url": "https://prasetia.me"
   },
   "license": "MIT",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     }
   },
   "publishConfig": {
@@ -36,7 +37,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "pnpm typecheck && pnpm clean && pnpm tsup",
     "dev": "tsup --watch",
     "clean": "rimraf dist",
     "typecheck": "tsc --noEmit",

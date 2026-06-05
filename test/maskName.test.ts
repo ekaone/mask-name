@@ -1,7 +1,8 @@
-import { describe, it, expect } from "vitest";
-import { maskName } from "../src/maskName";
-import { detectScript, isCJKCharacter } from "../src/utils/detectScript";
-import { maskSegment } from "../src/utils/maskSegment";
+import { describe, it, expect, expectTypeOf } from "vitest";
+import { maskName, maskNameValue, maskNames } from "../src/maskName.js";
+import type { MaskNameResult, MaskNameResultWithoutOriginal } from "../src/types.js";
+import { detectScript, isCJKCharacter } from "../src/utils/detectScript.js";
+import { maskSegment } from "../src/utils/maskSegment.js";
 
 // ---------------------------------------------------------------------------
 // detectScript
@@ -382,5 +383,120 @@ describe("maskName() — mixed & edge cases", () => {
     const { masked } = maskName("Eka", { visibleStart: 0, visibleEnd: 0 });
     // clampVisible ensures at least 1 visible char
     expect(masked).not.toBe("***");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// maskName - privacy and convenience APIs
+// ---------------------------------------------------------------------------
+
+describe("maskName() privacy output options", () => {
+  it("includes original by default for backward compatibility", () => {
+    const result = maskName("Eka Prasetia");
+
+    expectTypeOf(result).toEqualTypeOf<MaskNameResult>();
+    expect(result).toEqual({
+      masked: "E*a P*****ia",
+      script: "latin",
+      original: "Eka Prasetia",
+    });
+  });
+
+  it("omits original when includeOriginal is false", () => {
+    const result = maskName("Eka Prasetia", { includeOriginal: false });
+
+    expectTypeOf(result).toEqualTypeOf<MaskNameResultWithoutOriginal>();
+    expect(result).toEqual({
+      masked: "E*a P*****ia",
+      script: "latin",
+    });
+    expect("original" in result).toBe(false);
+  });
+});
+
+describe("maskNameValue()", () => {
+  it("returns only the masked string", () => {
+    expect(maskNameValue("Eka Prasetia")).toBe("E*a P*****ia");
+  });
+
+  it("respects masking options", () => {
+    expect(maskNameValue("Prasetia", { visibleStart: 2, visibleEnd: 0 })).toBe(
+      "Pr******"
+    );
+  });
+});
+
+describe("maskNames()", () => {
+  it("masks a batch of names in input order", () => {
+    const results = maskNames(["Eka Prasetia", "Madonna"]);
+
+    expectTypeOf(results).toEqualTypeOf<MaskNameResult[]>();
+    expect(results.map((result) => result.masked)).toEqual([
+      "E*a P*****ia",
+      "M****na",
+    ]);
+  });
+
+  it("passes includeOriginal: false through to each result", () => {
+    const results = maskNames(["Eka", "Madonna"], { includeOriginal: false });
+
+    expectTypeOf(results).toEqualTypeOf<MaskNameResultWithoutOriginal[]>();
+    expect(results).toEqual([
+      { masked: "E*a", script: "latin" },
+      { masked: "M****na", script: "latin" },
+    ]);
+  });
+
+  it("preserves current error behavior for invalid names", () => {
+    expect(() => maskNames(["Eka", ""])).toThrow(TypeError);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// separatorMode: "name"
+// ---------------------------------------------------------------------------
+
+describe("maskName() separatorMode", () => {
+  it("keeps whitespace mode as the default", () => {
+    const { masked } = maskName("Jean-Claude");
+
+    expect(masked).toBe("J********de");
+  });
+
+  it("splits and preserves hyphenated names in name mode", () => {
+    const { masked } = maskName("Jean-Claude", { separatorMode: "name" });
+
+    expect(masked).toBe("J*an-C***de");
+  });
+
+  it("splits and preserves apostrophes in name mode", () => {
+    const { masked } = maskName("O'Connor", { separatorMode: "name" });
+
+    expect(masked).toBe("O'C***or");
+  });
+
+  it("splits and preserves periods in name mode", () => {
+    const { masked } = maskName("J. R. R. Tolkien", {
+      separatorMode: "name",
+    });
+
+    expect(masked).toBe("J. R. R. T****en");
+  });
+
+  it("splits and preserves Japanese interpuncts in name mode", () => {
+    const { masked } = maskName("山田・太郎", { separatorMode: "name" });
+
+    expect(masked).toBe("山*・太*");
+  });
+
+  it("handles mixed Latin and CJK name separators in name mode", () => {
+    const { masked, script } = maskName("John 山田-Taro", {
+      separatorMode: "name",
+      visibleStart: 1,
+      visibleEnd: 1,
+    });
+
+    expect(script).toBe("cjk");
+    expect(masked).toBe("J**n 山*-T**o");
   });
 });

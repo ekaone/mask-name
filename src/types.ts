@@ -2,6 +2,8 @@ export type SupportedLocale = "auto" | "en" | "zh" | "ja";
 
 export type ScriptType = "latin" | "cjk";
 
+export type SeparatorMode = "whitespace" | "name";
+
 export interface MaskNameOptions {
   /**
    * Character used for masking.
@@ -36,6 +38,22 @@ export interface MaskNameOptions {
    * @default true
    */
   preserveSpacing?: boolean;
+
+  /**
+   * Controls how name segments are split before masking.
+   * - "whitespace" keeps the original behavior and splits only on whitespace
+   * - "name" also splits on common name separators like hyphens, apostrophes,
+   *   periods, middle dots, and Japanese interpuncts
+   * @default "whitespace"
+   */
+  separatorMode?: SeparatorMode;
+
+  /**
+   * Include the original input in the returned object.
+   * Set to false when callers should avoid carrying raw personal data forward.
+   * @default true
+   */
+  includeOriginal?: boolean;
 }
 
 export interface MaskNameResult {
@@ -47,4 +65,12 @@ export interface MaskNameResult {
 
   /** Original input name */
   original: string;
+}
+
+export interface MaskNameResultWithoutOriginal {
+  /** The masked name string */
+  masked: string;
+
+  /** Detected or forced script type used for masking */
+  script: ScriptType;
 }

@@ -1,15 +1,12 @@
 # @ekaone/mask-name
 
-> A lightweight, zero-dependency utility to mask personal names for privacy protection. Supports **Latin**, **Chinese**, and **Japanese** scripts with fully customizable options.
+> A lightweight, zero-dependency TypeScript utility to mask personal names for privacy protection. Supports Latin, Chinese, and Japanese scripts with customizable masking options.
 
-Part of the [mask-suite](#related-packages) family alongside `mask-email`, `mask-phone`, `mask-card` and `mask-token`.
+Part of the [mask-suite](#related-packages) family alongside `mask-email`, `mask-phone`, `mask-card`, and `mask-token`.
 
 [![npm version](https://img.shields.io/npm/v/@ekaone/mask-name.svg)](https://www.npmjs.com/package/@ekaone/mask-name)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
-
-
----
 
 ## Installation
 
@@ -23,189 +20,163 @@ yarn add @ekaone/mask-name
 bun add @ekaone/mask-name
 ```
 
----
-
 ## Quick Start
 
 ```ts
-import { maskName } from "@ekaone/mask-name";
+import { maskName, maskNameValue, maskNames } from "@ekaone/mask-name";
 
 maskName("Eka Prasetia");
-// → { masked: "E*a P*****ia", script: "latin", original: "Eka Prasetia" }
+// -> { masked: "E*a P*****ia", script: "latin", original: "Eka Prasetia" }
 
 maskName("张伟", { locale: "zh" });
-// → { masked: "张*", script: "cjk", original: "张伟" }
+// -> { masked: "张*", script: "cjk", original: "张伟" }
 
 maskName("田中さくら", { locale: "ja" });
-// → { masked: "田**くら", script: "cjk", original: "田中さくら" }
-```
+// -> { masked: "田**くら", script: "cjk", original: "田中さくら" }
 
----
+maskNameValue("Eka Prasetia");
+// -> "E*a P*****ia"
+
+maskNames(["Eka Prasetia", "Madonna"]);
+// -> [{ masked: "E*a P*****ia", ... }, { masked: "M****na", ... }]
+```
 
 ## API
 
 ### `maskName(name, options?)`
 
-| Parameter | Type             | Required | Description              |
-|-----------|------------------|----------|--------------------------|
-| `name`    | `string`         | ✅       | The name string to mask  |
-| `options` | `MaskNameOptions`| ❌       | Configuration (see below)|
-
-**Returns** a `MaskNameResult` object:
+Masks one name and returns metadata about the masking operation.
 
 ```ts
-{
-  masked: string;    // The masked name
-  script: "latin" | "cjk"; // Detected or forced script
-  original: string;  // Original input, untouched
-}
+maskName("Eka Prasetia");
+// -> { masked: "E*a P*****ia", script: "latin", original: "Eka Prasetia" }
 ```
 
----
+### `maskNameValue(name, options?)`
+
+Returns only the masked string.
+
+```ts
+maskNameValue("Eka Prasetia");
+// -> "E*a P*****ia"
+```
+
+### `maskNames(names, options?)`
+
+Masks multiple names with the same options and preserves input order.
+
+```ts
+maskNames(["Eka Prasetia", "Madonna"], { includeOriginal: false });
+// -> [{ masked: "E*a P*****ia", script: "latin" }, { masked: "M****na", script: "latin" }]
+```
 
 ## Options
 
-| Option           | Type              | Default  | Description                                                  |
-|------------------|-------------------|----------|--------------------------------------------------------------|
-| `char`           | `string`          | `"*"`    | Single character used for masking                            |
-| `visibleStart`   | `number`          | `1`      | Number of characters to reveal at the start of each segment |
-| `visibleEnd`     | `number`          | `2`      | Number of characters to reveal at the end of each segment   |
-| `locale`         | `SupportedLocale` | `"auto"` | Script hint: `"auto"` `"en"` `"zh"` `"ja"`                  |
-| `preserveSpacing`| `boolean`         | `true`   | Preserve original whitespace between name segments          |
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `char` | `string` | `"*"` | Single character used for masking |
+| `visibleStart` | `number` | `1` | Number of characters to reveal at the start of each segment |
+| `visibleEnd` | `number` | `2` | Number of characters to reveal at the end of each segment |
+| `locale` | `"auto" \| "en" \| "zh" \| "ja"` | `"auto"` | Script hint for detection or forced processing |
+| `preserveSpacing` | `boolean` | `true` | Preserve original whitespace between name segments |
+| `separatorMode` | `"whitespace" \| "name"` | `"whitespace"` | Split only on whitespace, or also split on common name separators |
+| `includeOriginal` | `boolean` | `true` | Include the raw input name in the result |
 
----
+## Privacy-Safe Output
 
-## Examples
-
-### Custom mask character
+Use `includeOriginal: false` when downstream code should avoid carrying raw personal data.
 
 ```ts
-maskName("Eka Prasetia", { char: "#" });
-// → { masked: "E## ######ia", ... }
-
-maskName("Eka Prasetia", { char: "-" });
-// → { masked: "E-- ------ia", ... }
+maskName("Eka Prasetia", { includeOriginal: false });
+// -> { masked: "E*a P*****ia", script: "latin" }
 ```
 
-### Custom visible range
+## Separator Modes
+
+The default `separatorMode: "whitespace"` preserves the existing behavior.
 
 ```ts
-// Show 2 chars at start, none at end
+maskName("Jean-Claude");
+// -> { masked: "J********de", ... }
+```
+
+Use `separatorMode: "name"` to preserve and split around common name separators such as hyphens, apostrophes, periods, middle dots, and Japanese interpuncts.
+
+```ts
+maskName("Jean-Claude", { separatorMode: "name" });
+// -> { masked: "J*an-C***de", ... }
+
+maskName("O'Connor", { separatorMode: "name" });
+// -> { masked: "O'C***or", ... }
+
+maskName("J. R. R. Tolkien", { separatorMode: "name" });
+// -> { masked: "J. R. R. T****en", ... }
+
+maskName("山田・太郎", { separatorMode: "name" });
+// -> { masked: "山*・太*", script: "cjk", ... }
+```
+
+## Script Examples
+
+```ts
 maskName("Prasetia", { visibleStart: 2, visibleEnd: 0 });
-// → { masked: "Pr******", ... }
+// -> { masked: "Pr******", ... }
 
-// Show none at start, 3 chars at end
-maskName("Prasetia", { visibleStart: 0, visibleEnd: 3 });
-// → { masked: "*****tia", ... }
-```
-
-### Three-word names
-
-```ts
-maskName("Juan Carlos Rivera");
-// → { masked: "J**n C****s R****ra", ... }
-```
-
-### Single-word name (mononym)
-
-```ts
-maskName("Madonna");
-// → { masked: "M****na", ... }
-```
-
-### Chinese names
-
-```ts
-// 2-character name (surname + given)
-maskName("张伟", { locale: "zh", visibleStart: 1, visibleEnd: 0 });
-// → { masked: "张*", ... }
-
-// 3-character name
 maskName("李小龙", { locale: "zh", visibleStart: 1, visibleEnd: 1 });
-// → { masked: "李*龙", ... }
+// -> { masked: "李*龙", ... }
 
-// Auto-detection — no locale needed
-maskName("张伟");
-// → { masked: "张*", script: "cjk", ... }
-```
-
-### Japanese names
-
-```ts
-// Kanji + Hiragana
-maskName("田中さくら", { locale: "ja", visibleStart: 1, visibleEnd: 1 });
-// → { masked: "田***ら", ... }
-
-// Pure Hiragana
 maskName("さくら", { locale: "ja", visibleStart: 1, visibleEnd: 1 });
-// → { masked: "さ*ら", ... }
+// -> { masked: "さ*ら", ... }
 
-// Pure Katakana
-maskName("サクラ", { locale: "ja", visibleStart: 1, visibleEnd: 0 });
-// → { masked: "サ**", ... }
-
-// Spaced Japanese name (surname + given with space)
-maskName("田中 さくら", { locale: "ja", visibleStart: 1, visibleEnd: 1 });
-// → { masked: "田* さ**ら", ... }
+maskName("John 田中", { visibleStart: 1, visibleEnd: 1 });
+// -> { masked: "J**n 田*", script: "cjk", ... }
 ```
-
-### Mixed Latin + CJK
-
-```ts
-// Auto-detection kicks in — resolves to CJK mode
-maskName("John 田中");
-// → { masked: "J**n 田*", script: "cjk", ... }
-```
-
-### Accented / special Latin characters
-
-```ts
-maskName("José García");
-// → { masked: "J**é G***ía", script: "latin", ... }
-```
-
----
 
 ## Utility Exports
 
-The internal utilities are also exported for power users who need granular access:
-
 ```ts
-import { detectScript, isCJKCharacter, maskSegment } from "@ekaone/mask-name";
+import {
+  CJK_RANGES,
+  detectScript,
+  isCJKCharacter,
+  maskSegment,
+} from "@ekaone/mask-name";
 
-detectScript("田中さくら");   // → "cjk"
-detectScript("Eka Prasetia"); // → "latin"
+detectScript("田中さくら"); // -> "cjk"
+detectScript("Eka Prasetia"); // -> "latin"
+isCJKCharacter("田"); // -> true
 
-isCJKCharacter("田"); // → true
-isCJKCharacter("A");  // → false
-
-maskSegment("Prasetia", { char: "*", visibleStart: 1, visibleEnd: 2, isCJK: false });
-// → "P*****ia"
+maskSegment("Prasetia", {
+  char: "*",
+  visibleStart: 1,
+  visibleEnd: 2,
+  isCJK: false,
+});
+// -> "P*****ia"
 ```
-
----
-
-## Behavior Notes
-
-**Short segments** — for segments of 1 character, the character is always revealed regardless of `visibleStart`/`visibleEnd`. For 2-character segments, at least 1 character is always shown.
-
-**CJK auto-detection** — if any character in the input is CJK (Kanji, Hiragana, Katakana, or CJK Unified Ideographs), the entire string is processed in CJK mode (character-level splitting). This handles mixed-script names like `"John 田中"` gracefully.
-
-**`preserveSpacing: false`** — strips leading/trailing whitespace and collapses multiple spaces between segments to a single space.
-
-**CJK + spaces** — some East Asian names include a space between surname and given name (e.g. `"田中 さくら"`). `maskName` handles this correctly by masking each segment independently while preserving the space.
-
----
 
 ## TypeScript
 
-Full TypeScript support is included. No `@types` package needed.
+Full TypeScript support is included. No `@types` package is needed.
 
 ```ts
-import type { MaskNameOptions, MaskNameResult, ScriptType, SupportedLocale } from "@ekaone/mask-name";
+import type {
+  MaskNameOptions,
+  MaskNameResult,
+  MaskNameResultWithoutOriginal,
+  ScriptType,
+  SeparatorMode,
+  SupportedLocale,
+} from "@ekaone/mask-name";
 ```
 
----
+## Behavior Notes
+
+Short segments of 1 character are always revealed. For 2-character segments, at least 1 character is always shown.
+
+CJK auto-detection treats the string as CJK when any CJK character is present. This handles mixed-script names like `"John 田中"`.
+
+When `preserveSpacing: false` is used with the default whitespace separator mode, leading/trailing whitespace is trimmed and multiple spaces collapse to one space.
 
 ## License
 
@@ -223,7 +194,3 @@ MIT © Eka Prasetia
 - [Token masking library](https://github.com/ekaone/mask-token)
 - [Phone masking library](https://github.com/ekaone/mask-phone)
 - [Email masking library](https://github.com/ekaone/mask-email)
-
----
-
-⭐ If this library helps you, please consider giving it a star on GitHub!

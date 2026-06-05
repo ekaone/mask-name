@@ -7,4 +7,5 @@ export default defineConfig({
   clean: true,
   minify: true, // esbuild
   sourcemap: true,
+  treeshake: true,
 });

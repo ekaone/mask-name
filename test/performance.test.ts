@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { maskName } from "../src/maskName";
+import { describe, it, expect } from "vitest";
+import { maskName } from "../src/maskName.js";
 
 describe("maskName() — performance", () => {
   describe("Single name processing", () => {
